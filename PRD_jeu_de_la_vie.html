@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRD — Jeu de la Vie</title>
+    <style>
+        @media print {
+            body { margin: 1.5cm; }
+            .no-print { display: none; }
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            color: #1a1a1a;
+            line-height: 1.7;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            border-bottom: 3px solid #22c55e;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #166534;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            margin-top: 35px;
+        }
+        h3 { color: #333; margin-top: 20px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px 12px;
+            text-align: left;
+        }
+        th { background-color: #f0fdf4; color: #166534; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+        .badge {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 0.85em;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        .print-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 30px;
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .print-btn:hover { background: #16a34a; }
+    </style>
+</head>
+<body>
+
+    <button class="print-btn no-print" onclick="window.print()">Imprimer / Sauvegarder en PDF</button>
+
+    <h1>PRD — Jeu de la Vie</h1>
+
+    <h2>1. Vue d'ensemble</h2>
+    <p><strong>Nom du produit :</strong> Jeu de la Vie</p>
+    <p><strong>Type :</strong> Application web mono-page (SPA)</p>
+    <p><strong>Résumé :</strong> Application web interactive permettant à un utilisateur de configurer puis de simuler une version simplifiée de l'automate cellulaire « Jeu de la Vie » de John Conway, sur une grille fixe de 10 × 10 cellules, avec un nombre de tours paramétrable et exactement 3 cellules vivantes au départ.</p>
+
+    <h2>2. Objectifs &amp; indicateurs de succès</h2>
+    <p><strong>Objectif principal :</strong> Offrir une expérience ludique et pédagogique permettant de visualiser l'évolution d'un automate cellulaire tour par tour, de la configuration initiale jusqu'à la fin de la simulation.</p>
+    <p><strong>Indicateurs de succès (qualitatifs, V1) :</strong> la simulation produit un résultat visuellement conforme aux règles à chaque tour ; l'utilisateur comprend intuitivement le fonctionnement sans documentation externe ; le temps de prise en main est inférieur à 30 secondes.</p>
+
+    <h2>3. Périmètre fonctionnel</h2>
+
+    <h3>3.1 Phase d'initialisation</h3>
+
+    <p><strong>3.1.1 — Choix du nombre de tours</strong></p>
+    <p>L'utilisateur définit un nombre de tours maximum compris entre <strong>10 et 100</strong> (bornes incluses). Ce paramètre détermine la durée totale de la simulation. Le champ est un input numérique (ou un slider) dont la valeur par défaut est 50. Toute valeur hors de l'intervalle [10 ; 100] est rejetée avec un message d'erreur explicite.</p>
+
+    <p><strong>3.1.2 — Placement des cellules vivantes initiales</strong></p>
+    <p>L'utilisateur sélectionne exactement <strong>3 cellules</strong> sur la grille en cliquant dessus. Un clic sur une cellule morte la rend vivante ; un clic sur une cellule déjà vivante la rend morte (toggle), permettant de corriger un placement. Un compteur visible indique en permanence le nombre de cellules vivantes sélectionnées (ex. « 2 / 3 cellules placées »). Tant que le compteur n'affiche pas exactement 3, le bouton de lancement de la simulation reste désactivé.</p>
+
+    <p><strong>3.1.3 — Lancement</strong></p>
+    <p>Un bouton « Lancer la simulation » devient actif lorsque les deux conditions sont remplies (nombre de tours valide <strong>et</strong> 3 cellules vivantes sélectionnées). Un clic sur ce bouton fait passer l'application en phase de simulation.</p>
+
+    <h3>3.2 Phase de simulation</h3>
+
+    <p><strong>3.2.1 — Grille</strong></p>
+    <p>La grille est un tableau de <strong>10 colonnes × 10 lignes</strong>, soit 100 cellules. Chaque cellule est un carré délimité par des <strong>bordures noires</strong> de 1 px. Une cellule <strong>vivante</strong> a un fond <strong>vert</strong> (<code>#22c55e</code>). Une cellule <strong>morte</strong> a un fond <strong>blanc</strong> (<code>#ffffff</code>). La grille est centrée horizontalement dans la page et s'adapte raisonnablement aux différentes tailles d'écran.</p>
+
+    <p><strong>3.2.2 — Règles d'évolution</strong> (appliquées simultanément à chaque tour)</p>
+    <p>Les deux règles suivantes s'appliquent à <strong>toutes les cellules en même temps</strong> à chaque tour (on calcule l'état complet du tour N+1 à partir de l'état du tour N, sans mutation intermédiaire) :</p>
+
+    <table>
+        <thead>
+            <tr><th>Règle</th><th>Condition</th><th>Résultat</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Naissance</strong></td><td>Une cellule <strong>morte</strong> possède <strong>exactement 3</strong> voisines vivantes</td><td>La cellule devient <strong>vivante</strong></td></tr>
+            <tr><td><strong>Mort</strong></td><td>Une cellule <strong>vivante</strong> ne possède <strong>ni 2 ni 3</strong> voisines vivantes</td><td>La cellule <strong>meurt</strong></td></tr>
+        </tbody>
+    </table>
+    <p><em>Note — une cellule vivante possédant exactement 2 ou 3 voisines vivantes <strong>survit</strong> (pas de changement).</em></p>
+    <p>Le <strong>voisinage</strong> d'une cellule est constitué des 8 cellules adjacentes (Moore neighborhood) : haut, bas, gauche, droite et les 4 diagonales. Les cellules situées sur les bords de la grille ont naturellement moins de 8 voisines (pas de wrapping torique).</p>
+
+    <p><strong>3.2.3 — Déroulement des tours</strong></p>
+    <p>La simulation progresse automatiquement tour par tour avec un intervalle de <strong>500 ms</strong> entre chaque tour (paramétrable en V2). Un compteur affiche le <strong>tour courant</strong> et le <strong>nombre total de tours</strong> (ex. « Tour 12 / 50 »).</p>
+
+    <p><strong>3.2.4 — Conditions d'arrêt</strong></p>
+    <p>La simulation s'arrête lorsque l'une des conditions suivantes est remplie (la première atteinte l'emporte) :</p>
+    <ul>
+        <li>Le nombre de tours maximum est atteint.</li>
+        <li>Toutes les cellules sont mortes (extinction).</li>
+        <li>L'état de la grille au tour N+1 est identique à l'état au tour N (stabilisation).</li>
+    </ul>
+    <p>Un message contextuel informe l'utilisateur de la raison de l'arrêt (« Simulation terminée — nombre de tours atteint », « Extinction totale au tour X », « État stable atteint au tour X »).</p>
+
+    <h3>3.3 Contrôles de simulation</h3>
+    <p>Pendant la simulation, l'utilisateur dispose des contrôles suivants :</p>
+    <ul>
+        <li><strong>Pause / Reprendre</strong> — met la progression automatique en pause ou la relance.</li>
+        <li><strong>Réinitialiser</strong> — stoppe la simulation et ramène l'utilisateur à la phase d'initialisation (grille vide, paramètres réinitialisés).</li>
+    </ul>
+
+    <h3>3.4 Phase de fin</h3>
+    <p>À la fin de la simulation, l'application affiche un écran récapitulatif contenant le <strong>dernier état de la grille</strong> (figé), le <strong>numéro du dernier tour joué</strong>, la <strong>raison de l'arrêt</strong>, et le <strong>nombre de cellules vivantes restantes</strong>. Un bouton « Recommencer » ramène à la phase d'initialisation.</p>
+
+    <h2>4. Exigences non fonctionnelles</h2>
+    <p><strong>Performance :</strong> Le calcul d'un tour et le rendu de la grille doivent être instantanés (&lt; 16 ms) sur un appareil standard. Avec une grille 10 × 10, ceci ne pose aucun défi technique.</p>
+    <p><strong>Compatibilité navigateurs :</strong> Chrome, Firefox, Safari, Edge — dernières 2 versions majeures.</p>
+    <p><strong>Responsive :</strong> L'application doit être utilisable sur desktop et tablette. Un support mobile basique (portrait) est souhaité mais non bloquant pour la V1.</p>
+    <p><strong>Accessibilité :</strong> Contraste suffisant entre les cellules vivantes, mortes et les bordures (ratio ≥ 4.5:1). Les boutons sont accessibles au clavier.</p>
+    <p><strong>Pas de backend :</strong> L'application fonctionne intégralement côté client (HTML / CSS / JavaScript). Aucune donnée n'est stockée ni transmise.</p>
+
+    <h2>5. Architecture technique recommandée</h2>
+    <p>Le front peut être développé en <strong>HTML + CSS + JavaScript vanilla</strong> ou à l'aide d'un framework léger (Vue, React, Svelte au choix). La grille peut être rendue via un élément <code>&lt;canvas&gt;</code>, une <code>CSS Grid</code> de <code>&lt;div&gt;</code>, ou un <code>&lt;table&gt;</code>. Le moteur de simulation est une fonction pure <code>(grille_N) → grille_N+1</code> facilitant les tests unitaires.</p>
+
+    <h2>6. User flow synthétique</h2>
+    <pre>
+┌─────────────────────────┐
+│   ÉCRAN D'INITIALISATION │
+│                         │
+│  1. Choisir nb de tours │
+│  2. Cliquer 3 cellules  │
+│  3. Bouton [Lancer]     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│   ÉCRAN DE SIMULATION    │
+│                         │
+│  Grille animée tour/tour│
+│  Compteur de tours      │
+│  [Pause] [Réinitialiser]│
+└───────────┬─────────────┘
+            │  arrêt (max tours /
+            │  extinction / stable)
+            ▼
+┌─────────────────────────┐
+│     ÉCRAN DE FIN         │
+│                         │
+│  Grille figée           │
+│  Résumé                 │
+│  [Recommencer]          │
+└─────────────────────────┘
+    </pre>
+
+    <h2>7. Hors périmètre (V1)</h2>
+    <p>Les éléments suivants sont explicitement exclus de cette première version : taille de grille configurable, nombre initial de cellules vivantes configurable, vitesse de simulation réglable, import/export de configuration, historique des tours avec navigation arrière, grille torique (bords connectés), et mode multijoueur.</p>
+
+    <h2>8. Questions ouvertes</h2>
+    <table>
+        <thead>
+            <tr><th>#</th><th>Question</th><th>Impact</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td>Souhaite-t-on un mode « pas à pas » (avancer manuellement tour par tour) en plus du mode automatique ?</td><td>UX / contrôle</td></tr>
+            <tr><td>2</td><td>La grille doit-elle supporter le wrapping torique (les bords se rejoignent) dans une version future ?</td><td>Règles / moteur</td></tr>
+            <tr><td>3</td><td>Faut-il persister le dernier état en <code>localStorage</code> pour reprendre après fermeture du navigateur ?</td><td>Technique</td></tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Document rédigé le 12 mars 2026 — Version 1.0</p>
+    </div>
+
+</body>
+</html>

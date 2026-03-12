@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de la Vie — Conway</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- ══════════════════════════════════════════
+         ÉCRAN 1 — INITIALISATION
+    ══════════════════════════════════════════ -->
+    <div id="screen-init" class="screen active">
+        <header class="app-header">
+            <div class="header-icon">🧬</div>
+            <h1>Jeu de la Vie</h1>
+            <p class="subtitle">Automate cellulaire de John Conway</p>
+        </header>
+
+        <main class="init-content">
+
+            <!-- Étape 1 : nombre de cellules vivantes initiales -->
+            <section class="card step-card" id="step-cells-target">
+                <div class="step-badge">Étape 1</div>
+                <h2><i class="fas fa-seedling"></i> Cellules vivantes initiales</h2>
+                <p class="step-desc">Combien de cellules vivantes souhaitez-vous placer au départ ? (entre <strong>3</strong> et <strong>99</strong>)</p>
+                <div class="input-group">
+                    <label for="cells-target-input">Nombre de cellules à placer</label>
+                    <div class="input-row">
+                        <input
+                            type="range"
+                            id="cells-target-slider"
+                            min="3" max="99" value="3"
+                            aria-label="Nombre de cellules vivantes (slider)"
+                        >
+                        <input
+                            type="number"
+                            id="cells-target-input"
+                            min="3" max="99" value="3"
+                            aria-label="Nombre de cellules vivantes (saisie)"
+                        >
+                    </div>
+                    <div id="cells-target-error" class="error-msg" role="alert" aria-live="polite"></div>
+                    <div class="turns-hint">Valeur actuelle : <strong id="cells-target-display">3</strong> cellule(s) à placer</div>
+                </div>
+            </section>
+
+            <!-- Étape 2 : nombre de tours -->
+            <section class="card step-card" id="step-turns">
+                <div class="step-badge">Étape 2</div>
+                <h2><i class="fas fa-sliders-h"></i> Nombre de tours</h2>
+                <p class="step-desc">Définissez la durée maximale de la simulation (entre 10 et 100 tours).</p>
+                <div class="input-group">
+                    <label for="turns-input">Nombre de tours</label>
+                    <div class="input-row">
+                        <input
+                            type="range"
+                            id="turns-slider"
+                            min="10" max="100" value="50"
+                            aria-label="Nombre de tours (slider)"
+                        >
+                        <input
+                            type="number"
+                            id="turns-input"
+                            min="10" max="100" value="50"
+                            aria-label="Nombre de tours (saisie)"
+                        >
+                    </div>
+                    <div id="turns-error" class="error-msg" role="alert" aria-live="polite"></div>
+                    <div class="turns-hint">Valeur actuelle : <strong id="turns-display">50</strong> tours</div>
+                </div>
+            </section>
+
+            <!-- Étape 3 : placement des cellules -->
+            <section class="card step-card" id="step-cells">
+                <div class="step-badge">Étape 3</div>
+                <h2><i class="fas fa-th"></i> Placement des cellules vivantes</h2>
+                <p class="step-desc" id="step-cells-desc">Cliquez sur exactement <strong id="cells-target-label">3 cellules</strong> pour les placer. Recliquez pour les retirer.</p>
+
+                <div class="counter-badge" id="cells-counter" aria-live="polite">
+                    <span class="counter-icon" id="counter-icon">⚪</span>
+                    <span id="cells-count-text">0 / 3 cellules placées</span>
+                </div>
+
+                <div class="grid-wrapper">
+                    <div id="init-grid" class="game-grid" role="grid" aria-label="Grille de placement 10x10"></div>
+                </div>
+
+                <button class="btn btn-secondary btn-sm" id="btn-clear-grid">
+                    <i class="fas fa-eraser"></i> Effacer la grille
+                </button>
+            </section>
+
+            <!-- Bouton lancer -->
+            <div class="launch-section">
+                <button class="btn btn-primary btn-launch" id="btn-launch" disabled aria-disabled="true">
+                    <i class="fas fa-play"></i> Lancer la simulation
+                </button>
+                <p class="launch-hint" id="launch-hint">Définissez vos paramètres et placez le bon nombre de cellules pour démarrer.</p>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         ÉCRAN 2 — SIMULATION
+    ══════════════════════════════════════════ -->
+    <div id="screen-sim" class="screen">
+        <header class="app-header sim-header">
+            <div class="header-icon">🧬</div>
+            <h1>Simulation en cours</h1>
+        </header>
+
+        <main class="sim-content">
+
+            <!-- Infos de tour -->
+            <div class="sim-info-bar">
+                <div class="info-chip" id="tour-counter" aria-live="polite">
+                    <i class="fas fa-step-forward"></i>
+                    Tour <span id="current-turn">0</span> / <span id="max-turn">50</span>
+                </div>
+                <div class="info-chip" id="alive-counter" aria-live="polite">
+                    <i class="fas fa-circle" style="color:#22c55e"></i>
+                    <span id="alive-count">0</span> cellule(s) vivante(s)
+                </div>
+                <div class="info-chip status-chip" id="sim-status-chip">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    En cours…
+                </div>
+            </div>
+
+            <!-- Barre de progression -->
+            <div class="progress-bar-wrap" aria-hidden="true">
+                <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+            </div>
+
+            <!-- Grille -->
+            <div class="grid-wrapper">
+                <div id="sim-grid" class="game-grid" role="grid" aria-label="Grille de simulation 10x10"></div>
+            </div>
+
+            <!-- Contrôles -->
+            <div class="sim-controls">
+                <button class="btn btn-warning" id="btn-pause" aria-label="Pause ou Reprendre la simulation">
+                    <i class="fas fa-pause" id="pause-icon"></i>
+                    <span id="pause-text">Pause</span>
+                </button>
+                <button class="btn btn-danger" id="btn-reset-sim">
+                    <i class="fas fa-redo"></i> Réinitialiser
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         ÉCRAN 3 — FIN
+    ══════════════════════════════════════════ -->
+    <div id="screen-end" class="screen">
+        <header class="app-header end-header">
+            <div class="header-icon" id="end-icon">🏁</div>
+            <h1>Simulation terminée</h1>
+        </header>
+
+        <main class="end-content">
+
+            <!-- Message de fin -->
+            <div class="card result-card" id="result-card">
+                <div class="result-reason" id="result-reason">
+                    <i class="fas fa-flag-checkered result-icon" id="result-icon"></i>
+                    <p id="result-message">Simulation terminée</p>
+                </div>
+                <div class="result-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Dernier tour joué</span>
+                        <span class="stat-value" id="end-turn">—</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Cellules vivantes</span>
+                        <span class="stat-value green" id="end-alive">—</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Cellules mortes</span>
+                        <span class="stat-value" id="end-dead">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grille figée -->
+            <div class="card grid-card">
+                <h3><i class="fas fa-camera"></i> État final de la grille</h3>
+                <div class="grid-wrapper">
+                    <div id="end-grid" class="game-grid frozen" role="grid" aria-label="Grille finale figée 10x10"></div>
+                </div>
+            </div>
+
+            <!-- Recommencer -->
+            <div class="launch-section">
+                <button class="btn btn-primary btn-launch" id="btn-restart">
+                    <i class="fas fa-redo"></i> Recommencer
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/game.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>
